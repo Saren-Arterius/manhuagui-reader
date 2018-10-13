@@ -43,7 +43,7 @@ div
       transition(name="slide-fade-up" mode="out-in")
         .manga-container.center(v-if="currentChapter.imageURLs" key="aa")
           .row(v-for="u in currentChapter.imageURLs")
-            img.lazy.manga(v-lazy="u")
+            img.lazy.manga(v-lazy="proxy(u)")
         .valign-wrapper(v-else key="bb")
           .center(style="margin-left: auto; margin-right: auto; margin-top: 4em;")
             Spinner
@@ -63,7 +63,7 @@ import {setTimeout} from 'timers';
 
 // or with options
 Vue.use(VueLazyload, {
-  preLoad: 1.3,
+  preLoad: 3,
   error:
     'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8V1BgAFBAHhFD2CqgAAAABJRU5ErkJggg==',
   attempt: 3
@@ -90,6 +90,9 @@ export default {
     Spinner
   },
   methods: {
+    proxy (url) {
+      return `${location.href}img?url=${encodeURIComponent(url)}`;
+    },
     async loadChapter (c) {
       this.currentChapter = c;
       if (!this.driver) {
@@ -114,7 +117,6 @@ export default {
             .replace('window["\\x65\\x76\\x61\\x6c"]', '');
           src = `String.prototype.splic = (function(f){return LZString.decompressFromBase64(this).split(f)}); return ${src}`;
           src = src.replace('&lt;', '<').replace('&gt;', '>');
-          console.log(src);
           payload = await this.driver.executeScript(src);
           break;
         } catch (e) {
@@ -183,6 +185,9 @@ export default {
       }
       console.log(JSON.stringify(this.manga));
     }
+  },
+  mounted () {
+    console.log(location.host);
   }
 };
 </script>

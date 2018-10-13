@@ -2,17 +2,48 @@
 **  Nuxt
 */
 
+const {execFile} = require('mz/child_process');
+const {readFile} = require('mz/fs');
+const crypto = require('crypto');
 const electron = require('electron');
 const path = require('path');
 const http = require('http');
 const {Nuxt, Builder} = require('nuxt');
 const config = require('./nuxt.config.js');
 
+let waifu2xDisabled = false;
+
 config.rootDir = __dirname; // for electron-builder
 // Init Nuxt.js
 const nuxt = new Nuxt(config);
 const builder = new Builder(nuxt);
-const server = http.createServer(nuxt.render);
+
+const imageProxy = async (req, res) => {
+  if (req.url.startsWith('/img?url=')) {
+    const imageURL = decodeURIComponent(req.url.replace('/img?url=', ''));
+    const hash = crypto.createHash('md5').update(imageURL).digest('hex');
+    const [destFile, enhancedFile] = [`/tmp/${hash}.webp`, `/tmp/${hash}.png`];
+    await execFile('wget', ['--header', 'Referer: https://www.manhuagui.com/', imageURL, '-O', destFile]);
+    let buf;
+    if (!waifu2xDisabled) {
+      try {
+        await execFile('schedtool', ['-D', '-e', 'waifu2x-converter-cpp', '--disable-gpu', '--block_size', '1024', '--noise_level', '2', '-i', destFile, '-o', enhancedFile]);
+        buf = await readFile(enhancedFile);
+      } catch (e) {
+        console.error(e);
+        waifu2xDisabled = true;
+      }
+    }
+    if (!buf) {
+      buf = await readFile(destFile);
+    }
+    await execFile('rm', ['-f', destFile, enhancedFile]);
+    return res.end(buf);
+  }
+  return nuxt.render(req, res);
+};
+
+const server = http.createServer(imageProxy);
 // Build only in dev mode
 if (config.dev) {
   builder.build().catch((err) => {
@@ -66,6 +97,7 @@ const newWin = () => {
   }
   return null;
 };
+
 app.on('ready', newWin);
 app.on('window-all-closed', () => app.quit());
 app.on('activate', () => win === null && newWin());
