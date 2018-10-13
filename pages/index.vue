@@ -49,10 +49,12 @@ import Vue from 'vue';
 import VueLazyload from 'vue-lazyload';
 import Spinner from '@/components/Spinner.vue';
 import webdriver from 'selenium-webdriver';
-import firefox from 'selenium-webdriver/firefox';
+import chrome from 'selenium-webdriver/chrome';
+
 import cheerio from 'cheerio';
 import {simplifiedToTraditional} from 'node-opencc';
 import rp from 'request-promise';
+import {setTimeout} from 'timers';
 
 // or with options
 Vue.use(VueLazyload, {
@@ -62,6 +64,7 @@ Vue.use(VueLazyload, {
   attempt: 3
 });
 
+const sleep = ms => new Promise(rs => setTimeout(rs, ms));
 export default {
   data: () => ({
     driver: null,
@@ -85,26 +88,34 @@ export default {
     async loadChapter (c) {
       this.currentChapter = c;
       if (!this.driver) {
-        const options = new firefox.Options()
-          .setBinary('/usr/bin/firefox')
-          .addArguments('--headless');
-
+        const options = new chrome.Options().headless();
         this.driver = new webdriver.Builder()
-          .forBrowser('firefox')
+          .forBrowser('chrome')
           .withCapabilities(
-            webdriver.Capabilities.firefox().setPageLoadStrategy('eager')
+            webdriver.Capabilities.chrome().setPageLoadStrategy('none')
           )
-          .setFirefoxOptions(options) // note this
+          .setChromeOptions(options)
           .build();
       }
+
       await this.driver.get(`https://www.manhuagui.com${c.href}`);
-      const html = await this.driver.getPageSource();
-      const $ = cheerio.load(html);
-      let src = $('body > script:nth-child(8)')
-        .html()
-        .replace('window["\\x65\\x76\\x61\\x6c"]', '');
-      src = `String.prototype.splic = (function(f){return LZString.decompressFromBase64(this).split(f)}); return ${src}`;
-      const payload = await this.driver.executeScript(src);
+      let payload;
+      while (this.driver) {
+        try {
+          const html = await this.driver.getPageSource();
+          const $ = cheerio.load(html);
+          let src = $('body > script:nth-child(8)')
+            .html()
+            .replace('window["\\x65\\x76\\x61\\x6c"]', '');
+          src = `String.prototype.splic = (function(f){return LZString.decompressFromBase64(this).split(f)}); return ${src}`;
+          src = src.replace('&lt;', '<').replace('&gt;', '>');
+          console.log(src);
+          payload = await this.driver.executeScript(src);
+          break;
+        } catch (e) {
+          await sleep(50);
+        }
+      }
       await this.driver.quit();
       this.driver = null;
       // SMH.imgData({"bid":17535,"bname":"七龙珠超","bpic":"17535_56.jpg","cid":382633,"cname":"第38回","files":["pic_001.jpg.webp","pic_002.jpg.webp","pic_003.jpg.webp","pic_004.jpg.webp","pic_005.jpg.webp","pic_006.jpg.webp","pic_007.jpg.webp","pic_008.jpg.webp","pic_009.jpg.webp","pic_010.jpg.webp","pic_011.jpg.webp","pic_012.jpg.webp","pic_013.jpg.webp","pic_014.jpg.webp","pic_015.jpg.webp","pic_016.jpg.webp","pic_017.jpg.webp","pic_018.jpg.webp","pic_019.jpg.webp","pic_020.jpg.webp","pic_021.jpg.webp","pic_022.jpg.webp","pic_023.jpg.webp","pic_024.jpg.webp","pic_025.jpg.webp","pic_026.jpg.webp","pic_027.jpg.webp","pic_028.jpg.webp","pic_029.jpg.webp","pic_030.jpg.webp","pic_031.jpg.webp","pic_032.jpg.webp","pic_033.jpg.webp","pic_034.jpg.webp","pic_035.jpg.webp","pic_036.jpg.webp","pic_037.jpg.webp","pic_038.jpg.webp","pic_039.jpg.webp","pic_040.jpg.webp","pic_041.jpg.webp","pic_042.jpg.webp","pic_043.jpg.webp","pic_044.jpg.webp","pic_045.jpg.webp"],"finished":false,"len":45,"path":"/ps4/l/lzc_nsm/第38回/","status":1,"block_cc":"","nextId":389685,"prevId":376569,"sl":{"md5":"xGl7Kq5tWwctUB5cypnOEg"}}).preInit();

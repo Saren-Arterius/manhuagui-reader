@@ -45,7 +45,7 @@ module.exports = {
     "no-restricted-globals": "off",
     "no-restricted-syntax": "off",
     "consistent-return": "error",
-    "no-unused-vars": ["error", {
+    "no-unused-vars": ["warn", {
       "args": "none"
     }],
     "no-trailing-spaces": "error",
