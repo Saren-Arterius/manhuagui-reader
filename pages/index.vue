@@ -18,7 +18,7 @@ div
           .row
             .col.s12.m4
               h3 {{ manga.title }}
-              img.img-responsive(:src="proxy(manga.cover)")
+              img.img-responsive.cover(:src="proxy(manga.cover)")
             .col.s12.m8
               div(v-for="s in manga.sections")
                 p.flow-text {{ s.title }}
@@ -302,5 +302,9 @@ img[lazy="loaded"] {
 #back {
   color: white;
   font-size: 3em;
+}
+
+.cover {
+  max-width: 100%;
 }
 </style>
