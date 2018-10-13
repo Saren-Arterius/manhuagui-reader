@@ -33,14 +33,19 @@ div
                       td {{ c.pages }}
     div(v-else key="b")
       .topbar
-        a(href="#" @click="currentChapter = null")
-          i.material-icons chevron_left
+        .top-col
+          a(href="#" @click="currentChapter = null")
+            i#back.material-icons chevron_left
+        .top-col
+          p.top-text.top-title.truncate {{ manga.title }}
+        .top-col
+          p.top-text.top-chapter.truncate {{ currentChapter.title }}
       transition(name="slide-fade-up" mode="out-in")
         .manga-container.center(v-if="currentChapter.imageURLs" key="aa")
           .row(v-for="u in currentChapter.imageURLs")
             img.lazy.manga(v-lazy="u")
         .valign-wrapper(v-else key="bb")
-          .center(style="margin-left: auto; margin-right: auto;")
+          .center(style="margin-left: auto; margin-right: auto; margin-top: 4em;")
             Spinner
 </template>
 
@@ -254,13 +259,42 @@ img[lazy="loaded"] {
 
 .topbar {
   height: 3em;
-  background-color: rgba(0, 0, 0, 0.2);
+  background-color: rgba(0, 0, 0, 0.5);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px);
   position: fixed;
   width: 100%;
   z-index: 999;
+  display: flex;
+}
+
+.top-col {
+  flex: 1;
 }
 
 .manga-container {
   padding-top: 3em;
+}
+
+.top-text {
+  margin: 0;
+  line-height: 3em;
+}
+
+.top-title {
+  text-align: center;
+  font-weight: 900;
+  font-size: 1.5em;
+  line-height: 2em;
+}
+
+.top-chapter {
+  text-align: right;
+  padding-right: 2em;
+}
+
+#back {
+  color: white;
+  font-size: 3em;
 }
 </style>

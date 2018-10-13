@@ -3,7 +3,10 @@ const webpack = require('webpack');
 module.exports = {
   mode: 'spa',
   head: {
-    title: 'manhuagui-reader'
+    title: 'manhuagui-reader',
+    link: [
+      {rel: 'stylesheet', href: 'https://fonts.googleapis.com/icon?family=Material+Icons'}
+    ]
   }, // Headers of the page
   loading: false, // Disable default loading bar
   build: {
