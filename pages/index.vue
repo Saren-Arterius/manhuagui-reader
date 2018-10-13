@@ -72,6 +72,7 @@ Vue.use(VueLazyload, {
 const sleep = ms => new Promise(rs => setTimeout(rs, ms));
 export default {
   data: () => ({
+    urlBase: null,
     driver: null,
     urlInput: 'https://www.manhuagui.com/comic/17535/',
     currentURL: null,
@@ -91,7 +92,7 @@ export default {
   },
   methods: {
     proxy (url) {
-      return `${location.href}img?url=${encodeURIComponent(url)}`;
+      return `${this.urlBase}img?url=${encodeURIComponent(url)}`;
     },
     async loadChapter (c) {
       this.currentChapter = c;
@@ -187,7 +188,7 @@ export default {
     }
   },
   mounted () {
-    console.log(location.host);
+    this.urlBase = location.href;
   }
 };
 </script>
