@@ -18,7 +18,7 @@ div
           .row
             .col.s12.m4
               h3 {{ manga.title }}
-              img.img-responsive(:src="manga.cover")
+              img.img-responsive(:src="proxy(manga.cover)")
             .col.s12.m8
               div(v-for="s in manga.sections")
                 p.flow-text {{ s.title }}
