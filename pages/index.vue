@@ -261,6 +261,7 @@ img[lazy="loaded"] {
 .manga {
   height: calc(100vh - 3em);
   max-width: 100vw;
+  object-fit: contain;
 }
 
 .topbar {
