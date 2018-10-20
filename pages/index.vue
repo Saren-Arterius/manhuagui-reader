@@ -28,18 +28,19 @@ div
                       th Chapter
                       th Pages
                   tbody
-                    tr(v-for="c in s.chapters" @click="loadChapter(c)")
+                    tr(v-for="c, i in s.chapters" @click="loadChapter(s, i)")
                       td {{ c.title }}
                       td {{ c.pages }}
     div(v-else key="b")
       .topbar
         .top-col
-          a(href="#" @click="currentChapter = null")
+          a(href="#" @click="currentSection = null")
             i#back.material-icons chevron_left
         .top-col
           p.top-text.top-title.truncate {{ manga.title }}
         .top-col
-          p.top-text.top-chapter.truncate {{ currentChapter.title }}
+          a(href="#" @click="loadChapter(currentSection, currentSectionIndex - 1)")
+            p.top-text.top-chapter.truncate(style="color: white") {{ currentChapter.title }}
       transition(name="slide-fade-up" mode="out-in")
         .manga-container.center(v-if="currentChapter.imageURLs" key="aa")
           .row(v-for="u in currentChapter.imageURLs")
@@ -55,6 +56,7 @@ import VueLazyload from 'vue-lazyload';
 import Spinner from '@/components/Spinner.vue';
 import webdriver from 'selenium-webdriver';
 import chrome from 'selenium-webdriver/chrome';
+import {dirname} from 'path';
 
 import cheerio from 'cheerio';
 import {simplifiedToTraditional} from 'node-opencc';
@@ -77,7 +79,8 @@ export default {
     urlInput: 'https://www.manhuagui.com/comic/17535/',
     currentURL: null,
     urlMangas: {},
-    currentChapter: null
+    currentSection: null,
+    currentSectionIndex: null
   }),
   computed: {
     manga () {
@@ -85,6 +88,12 @@ export default {
     },
     loading () {
       return this.currentURL && this.manga !== false && !this.manga;
+    },
+    currentChapter () {
+      if (!this.currentSection || this.currentSectionIndex === null) {
+        return null;
+      }
+      return this.currentSection.chapters[this.currentSectionIndex];
     }
   },
   components: {
@@ -94,8 +103,11 @@ export default {
     proxy (url) {
       return `${this.urlBase}img?url=${encodeURIComponent(url)}`;
     },
-    async loadChapter (c) {
-      this.currentChapter = c;
+    async loadChapter (section, idx) {
+      this.currentSection = section;
+      this.currentSectionIndex = idx;
+      const c = section.chapters[idx];
+      console.log(section, idx, c);
       if (!this.driver) {
         const options = new chrome.Options().headless();
         this.driver = new webdriver.Builder()
@@ -106,7 +118,6 @@ export default {
           .setChromeOptions(options)
           .build();
       }
-
       await this.driver.get(`https://www.manhuagui.com${c.href}`);
       let payload;
       while (this.driver) {
@@ -138,7 +149,11 @@ export default {
       this.$set(c, 'imageURLs', urls);
     },
     async loadURL () {
-      this.currentURL = this.urlInput;
+      let url = this.urlInput;
+      if (url.includes('.html')) {
+        url = dirname(url);
+      }
+      this.currentURL = url;
       if (this.urlMangas[this.currentURL]) {
         return;
       }
