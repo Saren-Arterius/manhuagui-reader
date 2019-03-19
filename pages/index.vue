@@ -109,7 +109,7 @@ export default {
       const c = section.chapters[idx];
       console.log(section, idx, c);
       if (!this.driver) {
-        const options = new chrome.Options().headless();
+        const options = new chrome.Options().headless().setChromeBinaryPath('/usr/bin/chromium');
         this.driver = new webdriver.Builder()
           .forBrowser('chrome')
           .withCapabilities(
@@ -120,6 +120,7 @@ export default {
       }
       await this.driver.get(`https://www.manhuagui.com${c.href}`);
       let payload;
+      let data;
       while (this.driver) {
         try {
           const html = await this.driver.getPageSource();
@@ -130,6 +131,9 @@ export default {
           src = `String.prototype.splic = (function(f){return LZString.decompressFromBase64(this).split(f)}); return ${src}`;
           src = src.replace('&lt;', '<').replace('&gt;', '>');
           payload = await this.driver.executeScript(src);
+          data = JSON.parse(
+            payload.replace('SMH.imgData(', '').replace(').preInit();', '')
+          );
           break;
         } catch (e) {
           await sleep(50);
@@ -138,9 +142,7 @@ export default {
       await this.driver.quit();
       this.driver = null;
       // SMH.imgData({"bid":17535,"bname":"七龙珠超","bpic":"17535_56.jpg","cid":382633,"cname":"第38回","files":["pic_001.jpg.webp","pic_002.jpg.webp","pic_003.jpg.webp","pic_004.jpg.webp","pic_005.jpg.webp","pic_006.jpg.webp","pic_007.jpg.webp","pic_008.jpg.webp","pic_009.jpg.webp","pic_010.jpg.webp","pic_011.jpg.webp","pic_012.jpg.webp","pic_013.jpg.webp","pic_014.jpg.webp","pic_015.jpg.webp","pic_016.jpg.webp","pic_017.jpg.webp","pic_018.jpg.webp","pic_019.jpg.webp","pic_020.jpg.webp","pic_021.jpg.webp","pic_022.jpg.webp","pic_023.jpg.webp","pic_024.jpg.webp","pic_025.jpg.webp","pic_026.jpg.webp","pic_027.jpg.webp","pic_028.jpg.webp","pic_029.jpg.webp","pic_030.jpg.webp","pic_031.jpg.webp","pic_032.jpg.webp","pic_033.jpg.webp","pic_034.jpg.webp","pic_035.jpg.webp","pic_036.jpg.webp","pic_037.jpg.webp","pic_038.jpg.webp","pic_039.jpg.webp","pic_040.jpg.webp","pic_041.jpg.webp","pic_042.jpg.webp","pic_043.jpg.webp","pic_044.jpg.webp","pic_045.jpg.webp"],"finished":false,"len":45,"path":"/ps4/l/lzc_nsm/第38回/","status":1,"block_cc":"","nextId":389685,"prevId":376569,"sl":{"md5":"xGl7Kq5tWwctUB5cypnOEg"}}).preInit();
-      const data = JSON.parse(
-        payload.replace('SMH.imgData(', '').replace(').preInit();', '')
-      );
+
       const urls = data.files.map(
         f => `https://i.hamreus.com${data.path}${f}?cid=${data.cid}&md5=${
           data.sl.md5
