@@ -121,20 +121,26 @@ export default {
       await this.driver.get(`https://www.manhuagui.com${c.href}`);
       let payload;
       let data;
-      while (this.driver) {
+      while (!data) {
         try {
           const html = await this.driver.getPageSource();
           const $ = cheerio.load(html);
-          let src = $('body > script:nth-child(8)')
-            .html()
-            .replace('window["\\x65\\x76\\x61\\x6c"]', '');
-          src = `String.prototype.splic = (function(f){return LZString.decompressFromBase64(this).split(f)}); return ${src}`;
-          src = src.replace('&lt;', '<').replace('&gt;', '>');
-          payload = await this.driver.executeScript(src);
-          data = JSON.parse(
-            payload.replace('SMH.imgData(', '').replace(').preInit();', '')
-          );
-          break;
+          const elements = [];
+          $('script').each(async (i, e) => {
+            elements.push(e);
+          });
+          for (const e of elements) {
+            let src = $(e).html();
+            if (!src || !src.includes('window["\\x65\\x76\\x61\\x6c"]')) continue;
+            src = src.replace('window["\\x65\\x76\\x61\\x6c"]', '');
+            src = `String.prototype.splic = (function(f){return LZString.decompressFromBase64(this).split(f)}); return ${src}`;
+            src = src.replace('&lt;', '<').replace('&gt;', '>');
+            console.log(src);
+            payload = await this.driver.executeScript(src);
+            data = JSON.parse(
+              payload.replace('SMH.imgData(', '').replace(').preInit();', '')
+            );
+          }
         } catch (e) {
           await sleep(50);
         }

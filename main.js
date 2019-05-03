@@ -27,7 +27,7 @@ const imageProxy = async (req, res) => {
     let buf;
     if (!waifu2xDisabled) {
       try {
-        await execFile('schedtool', ['-D', '-e', 'waifu2x-converter-cpp', '--disable-gpu', '--block-size', '1024', '-m', 'noise', '--noise_level', '3', '-i', destFile, '-o', enhancedFile]);
+        await execFile('schedtool', ['-D', '-e', 'waifu2x-converter-cpp', '--disable-gpu', '--block-size', '1024', '-m', 'noise', '--noise-level', '3', '-i', destFile, '-o', enhancedFile]);
         buf = await readFile(enhancedFile);
       } catch (e) {
         console.error(e);
