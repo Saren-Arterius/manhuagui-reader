@@ -19,6 +19,9 @@ div
             .col.s12.m4
               h3 {{ manga.title }}
               img.img-responsive.cover(:src="proxy(manga.cover)")
+              div
+                input#waifu2x.filled-in(type="checkbox" v-model="enableWaifu2x")
+                label(for='waifu2x') Enable waifu2x
             .col.s12.m8
               div(v-for="s in manga.sections")
                 p.flow-text {{ s.title }}
@@ -80,7 +83,8 @@ export default {
     currentURL: null,
     urlMangas: {},
     currentSection: null,
-    currentSectionIndex: null
+    currentSectionIndex: null,
+    enableWaifu2x: true
   }),
   computed: {
     manga () {
@@ -101,7 +105,12 @@ export default {
   },
   methods: {
     proxy (url) {
-      return `${this.urlBase}img?url=${encodeURIComponent(url)}`;
+      const data = encodeURIComponent(JSON.stringify({
+        url,
+        enableWaifu2x: this.enableWaifu2x
+      }));
+      console.log(data);
+      return `${this.urlBase}img?data=${data}`;
     },
     async loadChapter (section, idx) {
       this.currentSection = section;

@@ -1,6 +1,6 @@
 {
   "name": "manhuagui-reader",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Nuxt + Electron",
   "author": "Saren Arterius <saren@wtako.net>",
   "private": true,

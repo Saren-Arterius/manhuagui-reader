@@ -19,15 +19,17 @@ const nuxt = new Nuxt(config);
 const builder = new Builder(nuxt);
 
 const imageProxy = async (req, res) => {
-  if (req.url.startsWith('/img?url=')) {
-    const imageURL = decodeURIComponent(req.url.replace('/img?url=', ''));
+  if (req.url.startsWith('/img?data=')) {
+    const data = JSON.parse(decodeURIComponent(req.url.replace('/img?data=', '')));
+    const imageURL = data.url;
+    const enableWaifu2x = data.enableWaifu2x;
     const hash = crypto.createHash('md5').update(imageURL).digest('hex');
     const [destFile, enhancedFile] = [`/tmp/${hash}.webp`, `/tmp/${hash}.png`];
     await execFile('wget', ['--header', 'Referer: https://www.manhuagui.com/', imageURL, '-O', destFile]);
     let buf;
-    if (!waifu2xDisabled) {
+    if (enableWaifu2x && !waifu2xDisabled) {
       try {
-        await execFile('schedtool', ['-D', '-e', 'waifu2x-converter-cpp', '--disable-gpu', '--block-size', '1024', '-m', 'noise', '--noise-level', '3', '-i', destFile, '-o', enhancedFile]);
+        await execFile('schedtool', ['-D', '-e', 'waifu2x-converter-cpp', '--disable-gpu', '--block-size', '1024', '-m', 'noise', '-i', destFile, '-o', enhancedFile]);
         buf = await readFile(enhancedFile);
       } catch (e) {
         console.error(e);
