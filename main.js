@@ -23,13 +23,18 @@ const imageProxy = async (req, res) => {
     const data = JSON.parse(decodeURIComponent(req.url.replace('/img?data=', '')));
     const imageURL = data.url;
     const enableWaifu2x = data.enableWaifu2x;
+    const disableGPU = data.disableGPU;
     const hash = crypto.createHash('md5').update(imageURL).digest('hex');
     const [destFile, enhancedFile] = [`/tmp/${hash}.webp`, `/tmp/${hash}.png`];
     await execFile('wget', ['--header', 'Referer: https://www.manhuagui.com/', imageURL, '-O', destFile]);
     let buf;
     if (enableWaifu2x && !waifu2xDisabled) {
       try {
-        await execFile('schedtool', ['-D', '-e', 'waifu2x-converter-cpp', '--disable-gpu', '--block-size', '1024', '-m', 'noise', '-i', destFile, '-o', enhancedFile]);
+        if (disableGPU) {
+          await execFile('schedtool', ['-D', '-e', 'waifu2x-converter-cpp', '--disable-gpu', '--block-size', '1024', '-i', destFile, '-o', enhancedFile]);
+        } else {
+          await execFile('schedtool', ['-D', '-e', 'waifu2x-converter-cpp', '--block-size', '1024', '-i', destFile, '-o', enhancedFile]);
+        }
         buf = await readFile(enhancedFile);
       } catch (e) {
         console.error(e);

@@ -22,6 +22,9 @@ div
               div
                 input#waifu2x.filled-in(type="checkbox" v-model="enableWaifu2x")
                 label(for='waifu2x') Enable waifu2x
+              div
+                input#gpu.filled-in(type="checkbox" v-model="disableGPU")
+                label(for='gpu') Disable GPU
             .col.s12.m8
               div(v-for="s in manga.sections")
                 p.flow-text {{ s.title }}
@@ -84,7 +87,8 @@ export default {
     urlMangas: {},
     currentSection: null,
     currentSectionIndex: null,
-    enableWaifu2x: true
+    enableWaifu2x: true,
+    disableGPU: false
   }),
   computed: {
     manga () {
@@ -107,7 +111,8 @@ export default {
     proxy (url) {
       const data = encodeURIComponent(JSON.stringify({
         url,
-        enableWaifu2x: this.enableWaifu2x
+        enableWaifu2x: this.enableWaifu2x,
+        disableGPU: this.disableGPU
       }));
       console.log(data);
       return `${this.urlBase}img?data=${data}`;
