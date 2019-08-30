@@ -59,7 +59,6 @@ div
 <script>
 import Vue from 'vue';
 import VueLazyload from 'vue-lazyload';
-import Spinner from '@/components/Spinner.vue';
 import webdriver from 'selenium-webdriver';
 import chrome from 'selenium-webdriver/chrome';
 import {dirname} from 'path';
@@ -68,6 +67,9 @@ import cheerio from 'cheerio';
 import {simplifiedToTraditional} from 'node-opencc';
 import rp from 'request-promise';
 import {setTimeout} from 'timers';
+
+
+import Spinner from '@/components/Spinner.vue';
 
 // or with options
 Vue.use(VueLazyload, {
